@@ -1,0 +1,55 @@
+---
+- name: install base tools
+  apt:
+    name:
+      - traceroute
+      - tcpdump
+      - net-tools
+    state: present
+    update_cache: true
+
+- name: install FRR packages
+  apt:
+    name: 
+      - frr
+      - frr-pythontools
+    state: present
+    update_cache: true
+
+- name: set up forward packages across routers
+  sysctl:
+    name: net.ipv4.conf.all.forwarding
+    value: '1'
+    state: present
+
+- name: set up asynchronous routing
+  sysctl:
+    name: net.ipv4.conf.all.rp_filter
+    value: '0'
+    state: present
+
+- name: set up daemons FRR
+  template:
+    src: templates/daemons
+    dest: /etc/frr/daemons
+    owner: frr
+    group: frr
+    mode: 0640
+
+- name: set up FRR 
+  template:
+    src: templates/frr.conf.j2
+    dest: /etc/frr/frr.conf
+    owner: frr
+    group: frr
+    mode: 0640
+  tags:
+    - setup_ospf
+
+- name: restart FRR
+  service:
+    name: frr
+    state: restarted
+    enabled: true 
+  tags:
+    - setup_ospf

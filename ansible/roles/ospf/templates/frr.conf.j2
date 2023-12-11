@@ -1,0 +1,74 @@
+!FRR version
+frr version 7.5.1
+frr defaults traditional
+!set hostname
+hostname {{ ansible_hostname }}
+log syslog informational
+no ipv6 forwarding
+service integrated-vtysh-config
+!
+!add info about nic
+interface eth1
+!set name of nic
+descripon nic1
+!set ip/mask
+ip address {{ ansible_eth1.ipv4.address }}/30
+!set mtu
+ip ospf mtu-ignore
+!if need set cost of nic
+{% if ansible_hostname == 'router1' %}
+ip ospf cost 1000
+{% elif ansible_hostname == 'router2' and symmetric_routing == true %}
+ip ospf cost 1000
+{% else %}
+!ip ospf cost 450
+{% endif %}
+!ip ospf cost 1000
+!set hello-interval paramets
+ip ospf hello-interval 10
+!set dead-interval parametrs
+!it must be multiple hello-interval
+ip ospf dead-interval 30
+!
+interface eth2
+ description nic2
+ ip address {{ ansible_eth2.ipv4.address }}/30
+ ip ospf mtu-ignore
+ !ip ospf cost 45
+ ip ospf hello-interval 10
+ ip ospf dead-interval 30
+!
+interface eth3
+ description nic3
+ ip address {{ ansible_eth3.ipv4.address }}/24
+ ip ospf mtu-ignore
+ !ip ospf cost 45
+ ip ospf hello-interval 10
+ ip ospf dead-interval 30 
+!
+!start conf of ospf
+router ospf
+!set router-id
+{% if router_id_enable == false %}!{% endif %}router-id {{ router_id }} 
+!
+!router-id 1.1.1.1
+!set networks that we will anons
+network {{ ansible_eth1.ipv4.network }}/30 area 0
+network {{ ansible_eth2.ipv4.network }}/30 area 0
+network {{ ansible_eth3.ipv4.network }}/24 area 0
+!
+!set ip address neighbor routers
+{% if ansible_hostname  == "router1" %}
+neighbor 10.0.10.2
+neighbor 10.0.12.2
+{% elif ansible_hostname  == "router2" %}
+neighbor 10.0.10.1
+neighbor 10.0.11.1
+{% else %}
+neighbor 10.0.11.2
+neighbor 10.0.12.1
+{% endif %}
+!
+!set path to log-file
+log file /var/log/frr/frr.log
+default-information originate always
