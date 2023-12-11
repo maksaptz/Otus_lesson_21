@@ -5,6 +5,7 @@
 MACHINES = {
   :router1 => {
         :box_name => "debian/bullseye64",
+        :box_vers => "11.20230615.1",
         :vm_name => "router1",
         :net => [
                    {ip: '10.0.10.1', adapter: 2, netmask: "255.255.255.252", virtualbox__intnet: "r1-r2"},
@@ -16,6 +17,7 @@ MACHINES = {
 
   :router2 => {
         :box_name => "debian/bullseye64",
+        :box_vers => "11.20230615.1",
         :vm_name => "router2",
         :net => [
                    {ip: '10.0.10.2', adapter: 2, netmask: "255.255.255.252", virtualbox__intnet: "r1-r2"},
@@ -27,6 +29,7 @@ MACHINES = {
 
   :router3 => {
         :box_name => "debian/bullseye64",
+        :box_vers => "11.20230615.1",
         :vm_name => "router3",
         :net => [
                    {ip: '10.0.11.1', adapter: 2, netmask: "255.255.255.252", virtualbox__intnet: "r2-r3"},
@@ -41,10 +44,11 @@ MACHINES = {
 Vagrant.configure("2") do |config|
 
   MACHINES.each do |boxname, boxconfig|
-    
+
     config.vm.define boxname do |box|
-   
+
       box.vm.box = boxconfig[:box_name]
+      box.vm.box_version = boxconfig[:box_vers]
       box.vm.host_name = boxconfig[:vm_name]
 
       if boxconfig[:vm_name] == "router3"
@@ -59,7 +63,6 @@ Vagrant.configure("2") do |config|
       boxconfig[:net].each do |ipconf|
         box.vm.network "private_network", ipconf
       end
-
      end
   end
 end
